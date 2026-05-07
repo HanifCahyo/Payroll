@@ -12,76 +12,48 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx as XlsxReader;
 
 class PayrollController extends Controller
 {
-    /**
-     * Mapping field DB => nama kolom ASLI di Excel (sheet SLIP GAJI).
-     * Urutan PENTING — untuk resolve kolom duplikat (Hari, Jam, Jumlah Potongan).
-     *
-     * Verified dari file: Lembur_Harian_M-17__20_-_26_April_2026_.xlsm
-     *
-     * Kolom di Excel:
-     *   B=No  C=NIP  D=Rekening  E=Nama  F=Bagian
-     *   G=Nominal  H=Hari(1)  I=Nominal Premi  J=Premi
-     *   K=Nominal UT  L=UT  M=Nominal Sumbangan  N=Hari(2)
-     *   O=Lembur Biasa  P=Jam(1)  Q=Lembur Libur  R=Jam(2)
-     *   S=Total  T=Potongan Kedisiplinan  U=Hari(3)  V=TOTAL
-     *   W=SEPATU  X=TERLAMBAT  Y=Menit  Z=HARI
-     *   AA=Jumlah Potongan(1)  AB=Simpanan Wajib  AC=Koperasi
-     *   AD=Ke  AE=BPJS  AF=Jumlah Potongan(2)
-     *   AG=Upah Yang Diterima  AH=Email
-     */
     private const COL_MAP = [
         'nip' => 'NIP',
         'rekening' => 'Rekening',
         'nama' => 'Nama',
         'bagian' => 'Bagian',
         'upah_nominal' => 'Nominal',
-        'upah_hari' => 'Hari',              // H (ke-1)
+        'upah_hari' => 'Hari',
         'nominal_premi' => 'Nominal Premi',
         'premi' => 'Premi',
         'nominal_ut' => 'Nominal UT',
         'ut' => 'UT',
         'nominal_sumbangan' => 'Nominal Sumbangan',
-        'hari_sumbangan' => 'Hari',              // N (ke-2)
+        'hari_sumbangan' => 'Hari',
         'lembur_biasa' => 'Lembur Biasa',
-        'jam_lb' => 'Jam',               // P (ke-1)
+        'jam_lb' => 'Jam',
         'lembur_libur' => 'Lembur Libur',
-        'jam_ll' => 'Jam',               // R (ke-2)
+        'jam_ll' => 'Jam',
         'total_upah' => 'Total',
         'potongan_kedisiplinan' => 'Potongan Kedisiplinan',
-        'hari_potongan' => 'Hari',              // U (ke-3)
+        'hari_potongan' => 'Hari',
         'total_kedisiplinan' => 'TOTAL',
         'sepatu' => 'SEPATU',
         'terlambat' => 'TERLAMBAT',
         'terlambat_menit' => 'Menit',
         'hari_terlambat' => 'HARI',
-        'jumlah_potongan_kedisiplinan' => 'Jumlah Potongan',   // AA (ke-1)
+        'jumlah_potongan_kedisiplinan' => 'Jumlah Potongan',
         'simpanan_wajib' => 'Simpanan Wajib',
         'koperasi' => 'Koperasi',
         'koperasi_ke' => 'Ke',
         'bpjs' => 'BPJS',
-        'jumlah_potongan' => 'Jumlah Potongan',   // AF (ke-2)
+        'jumlah_potongan' => 'Jumlah Potongan',
         'upah_diterima' => 'Upah Yang Diterima',
         'email' => 'Email',
     ];
 
-
-
     private const STRING_FIELDS = ['nip', 'rekening', 'nama', 'bagian', 'email'];
-
-    // ─────────────────────────────────────────────────────────────────
-    //  INDEX
-    // ─────────────────────────────────────────────────────────────────
-
     public function index()
     {
         return Inertia::render('Payroll/Index', [
             'imports' => PayrollImport::latest()->withCount('employees')->get(),
         ]);
     }
-
-    // ─────────────────────────────────────────────────────────────────
-    //  UPLOAD
-    // ─────────────────────────────────────────────────────────────────
 
     public function upload(Request $request)
     {
@@ -106,40 +78,22 @@ class PayrollController extends Controller
 
         $filePath = $request->file('file')->getPathname();
 
-        /**
-         * Kenapa data_only=true cukup dan tidak perlu formula resolver?
-         *
-         * File .xlsm ini punya formula cross-sheet seperti =SECURITY!A2
-         * dan =LOWER(SECURITY!AX2). Ketika file dibuka dan disimpan di Excel,
-         * Excel menyimpan CACHED VALUE hasil kalkulasi terakhir di dalam file.
-         *
-         * openpyxl dengan data_only=True membaca cached value tersebut —
-         * bukan formula string-nya. Jadi nilai yang kita baca sudah final
-         * tanpa perlu evaluasi apapun.
-         *
-         * Tidak ada timeout karena tidak ada kalkulasi formula.
-         */
         $reader = new XlsxReader();
-        $reader->setReadDataOnly(true);   // baca cached value, SKIP kalkulasi
+        $reader->setReadDataOnly(true);
         $spreadsheet = $reader->load($filePath);
 
         $sheet = $spreadsheet->getActiveSheet();
-
-        // Baca semua baris sekaligus, key = huruf kolom (A, B, C...)
-        // calculateFormulas=false karena data_only sudah handle ini
         $allRows = $sheet->toArray(
-            null,   // nullValue untuk sel kosong
-            true,  // calculateFormulas = FALSE
-            true,   // formatData
-            true    // returnCellRef = TRUE (key = huruf kolom)
+            null,
+            true,
+            true,
+            true
         );
 
         if (empty($allRows)) {
             return back()->withErrors(['file' => 'File Excel kosong atau tidak terbaca.']);
         }
 
-        // ── Build header map ──
-        // nameToLetters: ['NIP' => ['C'], 'Hari' => ['H','N','U'], ...]
         $headerRow = $allRows[1] ?? [];
         $nameToLetters = [];
         foreach ($headerRow as $letter => $value) {
@@ -149,10 +103,8 @@ class PayrollController extends Controller
             }
         }
 
-        // Resolve field → kolom letter, handle duplikat berdasarkan urutan COL_MAP
         $fieldToLetter = $this->resolveColumnLetters($nameToLetters);
 
-        // Validasi: pastikan kolom krusial ditemukan
         foreach (['nip', 'nama', 'email', 'upah_diterima'] as $required) {
             if (!isset($fieldToLetter[$required])) {
                 return back()->withErrors([
@@ -161,17 +113,16 @@ class PayrollController extends Controller
             }
         }
 
-        // ── Kumpulkan baris data valid (skip header & baris nama kosong) ──
         $dataRows = [];
         $namaLetter = $fieldToLetter['nama'];
 
         foreach ($allRows as $rowIndex => $row) {
             if ($rowIndex === 1)
-                continue; // skip header row
+                continue;
 
             $namaVal = trim((string) ($row[$namaLetter] ?? ''));
             if ($namaVal === '')
-                continue; // skip baris kosong
+                continue;
 
             $dataRows[$rowIndex] = $row;
         }
@@ -182,7 +133,7 @@ class PayrollController extends Controller
             return back()->withErrors(['file' => 'Tidak ada data karyawan yang ditemukan di file.']);
         }
 
-        // ── Buat record import ──
+
         $import = PayrollImport::create([
             'file_name' => $request->file('file')->getClientOriginalName(),
             'period' => strtoupper(trim($request->period)),
@@ -191,7 +142,6 @@ class PayrollController extends Controller
             'status' => 'ready',
         ]);
 
-        // ── Parse & bulk insert per 100 baris ──
         $batch = [];
         $rowNum = 0;
 
@@ -224,8 +174,6 @@ class PayrollController extends Controller
         if (!empty($batch)) {
             PayrollEmployee::insert($batch);
         }
-
-        // Cleanup memory
         $spreadsheet->disconnectWorksheets();
         unset($spreadsheet, $allRows, $dataRows);
 
@@ -233,26 +181,6 @@ class PayrollController extends Controller
             ->with('success', "Berhasil import {$totalRows} karyawan.");
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    //  HELPERS
-    // ─────────────────────────────────────────────────────────────────
-
-    /**
-     * Resolve kolom duplikat berdasarkan urutan kemunculan di COL_MAP.
-     *
-     * Contoh: 'Hari' muncul di kolom H, N, U di Excel:
-     *   upah_hari      → H (kemunculan ke-1)
-     *   hari_sumbangan → N (ke-2)
-     *   hari_potongan  → U (ke-3)
-     *
-     * 'Jam' muncul di P, R:
-     *   jam_lb → P (ke-1)
-     *   jam_ll → R (ke-2)
-     *
-     * 'Jumlah Potongan' muncul di AA, AF:
-     *   jumlah_potongan_kedisiplinan → AA (ke-1)
-     *   jumlah_potongan              → AF (ke-2)
-     */
     private function resolveColumnLetters(array $nameToLetters): array
     {
         $usedCount = [];
@@ -271,12 +199,7 @@ class PayrollController extends Controller
         return $result;
     }
 
-    /**
-     * Convert berbagai format nilai ke float.
-     * Handle format angka Indonesia: "1.500,75" → 1500.75
-     *                                "3,0"      → 3.0
-     *                                1500       → 1500.0
-     */
+
     private function toFloat(mixed $value): float
     {
         if ($value === null || $value === '')
@@ -302,10 +225,6 @@ class PayrollController extends Controller
         return is_numeric($str) ? (float) $str : 0.0;
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    //  DETAIL
-    // ─────────────────────────────────────────────────────────────────
-
     public function detail(PayrollImport $import)
     {
         return Inertia::render('Payroll/Detail', [
@@ -313,10 +232,6 @@ class PayrollController extends Controller
             'employees' => $import->employees()->orderBy('row_number')->get(),
         ]);
     }
-
-    // ─────────────────────────────────────────────────────────────────
-    //  PDF
-    // ─────────────────────────────────────────────────────────────────
 
     public function exportPdf(PayrollEmployee $employee)
     {

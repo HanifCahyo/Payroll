@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Mail;
 
 class PayrollEmailController extends Controller
 {
-    // Kirim 1 email (preview/test per karyawan)
     public function sendOne(PayrollEmployee $employee)
     {
         abort_if(empty($employee->email), 422, 'Email karyawan kosong.');
@@ -27,7 +26,6 @@ class PayrollEmailController extends Controller
         return back()->with('success', "Email terkirim ke {$employee->email}");
     }
 
-    // Kirim massal dengan range row_number
     public function sendBulk(Request $request, PayrollImport $import)
     {
         $request->validate([
@@ -49,7 +47,7 @@ class PayrollEmailController extends Controller
         foreach ($employees as $employee) {
             SendPayrollSlipJob::dispatch($employee, $config->id)
                 ->delay(now()->addSeconds($delay));
-            $delay += 3; // 3 detik antar email → aman untuk Gmail 500/hari
+            $delay += 3;
         }
 
         $import->update(['status' => 'sending']);
