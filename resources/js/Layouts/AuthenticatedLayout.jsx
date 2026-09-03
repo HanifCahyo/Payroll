@@ -1,9 +1,88 @@
-import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
-import NavLink from "@/Components/NavLink";
-import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+    LayoutDashboard,
+    ReceiptText,
+    TimerReset,
+    Mail,
+    CircleUserRound,
+    Menu,
+    X,
+    LogOut,
+    UploadCloud,
+} from "lucide-react";
+
+const navigation = [
+    {
+        name: "Dashboard",
+        href: route("dashboard"),
+        match: "dashboard",
+        icon: LayoutDashboard,
+    },
+    {
+        name: "Upload Payroll",
+        href: route("payroll.upload.form"),
+        match: "payroll.upload.form",
+        icon: UploadCloud,
+    },
+    {
+        name: "Gaji",
+        href: route("payroll.index"),
+        match: "payroll.*",
+        icon: ReceiptText,
+    },
+    {
+        name: "Lembur",
+        href: route("payroll.overtime.index"),
+        match: "payroll.overtime.*",
+        icon: TimerReset,
+    },
+    {
+        name: "SMTP Config",
+        href: route("mail-config.index"),
+        match: "mail-config.*",
+        icon: Mail,
+    },
+];
+
+function isNavigationActive(match) {
+    if (match === "payroll.upload.form") {
+        return route().current("payroll.upload.form");
+    }
+    if (match === "payroll.overtime.*") {
+        return (
+            route().current("payroll.overtime.*") ||
+            route().current("payroll.*overtime*")
+        );
+    }
+    if (match === "payroll.*") {
+        return (
+            route().current("payroll.*") &&
+            !route().current("payroll.overtime.*") &&
+            !route().current("payroll.*overtime*") &&
+            !route().current("payroll.upload.form")
+        );
+    }
+    return route().current(match);
+}
+
+function SidebarLink({ href, active, icon: Icon, children, onClick }) {
+    return (
+        <Link
+            href={href}
+            onClick={onClick}
+            className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                active
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                    : "text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
+            }`}
+        >
+            <Icon className="size-4 shrink-0" />
+            <span>{children}</span>
+        </Link>
+    );
+}
 
 export default function AuthenticatedLayout({
     user: userProp,
@@ -30,69 +109,128 @@ export default function AuthenticatedLayout({
     }, [flash]);
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="bg-white border-b border-gray-100">
-                <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex">
-                            <div className="flex items-center shrink-0">
-                                <Link href="/">
-                                    <ApplicationLogo className="block w-auto text-gray-800 fill-current h-9" />
-                                </Link>
-                            </div>
-
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route("dashboard")}
-                                    active={route().current("dashboard")}
-                                >
-                                    Dashboard
-                                </NavLink>
-                                <NavLink
-                                    href={route("payroll.index")}
-                                    active={route().current("payroll.*")}
-                                >
-                                    Payroll
-                                </NavLink>
-                                <NavLink
-                                    href={route("mail-config.index")}
-                                    active={route().current("mail-config.*")}
-                                >
-                                    SMTP Config
-                                </NavLink>
-                            </div>
+        <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f0fdf4_100%)]">
+            <div className="mx-auto flex min-h-screen max-w-[1800px]">
+                <aside className="sticky top-0 hidden h-screen w-80 shrink-0 flex-col border-r border-emerald-100 bg-white/90 px-6 py-6 backdrop-blur xl:flex">
+                    <Link
+                        href={route("dashboard")}
+                        className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-4"
+                    >
+                        <img
+                            src="/LOGO%20GGM%20BARU.png"
+                            alt="GGM"
+                            className="h-12 w-auto"
+                        />
+                        <div>
+                            <p className="text-sm font-semibold text-emerald-950">
+                                GGM Payroll
+                            </p>
+                            <p className="text-xs text-emerald-700/80">
+                                HEAD OF IT
+                            </p>
                         </div>
+                    </Link>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
+                    <nav className="mt-8 flex-1 space-y-2">
+                        {navigation.map((item) => (
+                            <SidebarLink
+                                key={item.name}
+                                href={item.href}
+                                active={isNavigationActive(item.match)}
+                                icon={item.icon}
+                            >
+                                {item.name}
+                            </SidebarLink>
+                        ))}
+
+                        <div className="pt-4">
+                            <SidebarLink
+                                href={route("profile.edit")}
+                                active={route().current("profile.edit")}
+                                icon={CircleUserRound}
+                            >
+                                Profile
+                            </SidebarLink>
+                        </div>
+                    </nav>
+
+                    <div className="rounded-3xl border border-emerald-100 bg-white p-4 shadow-sm">
+                        <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-600">
+                            Signed in as
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-slate-900">
+                            {user.name}
+                        </p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                        <Link
+                            href={route("logout")}
+                            method="post"
+                            as="button"
+                            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-rose-600 transition hover:text-rose-700"
+                        >
+                            <LogOut className="size-4" />
+                            Log out
+                        </Link>
+                    </div>
+                </aside>
+
+                <div className="flex min-w-0 flex-1 flex-col">
+                    <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 backdrop-blur">
+                        <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8 xl:pl-10">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowingNavigationDropdown(
+                                            (previousState) => !previousState,
+                                        )
+                                    }
+                                    className="inline-flex items-center justify-center rounded-xl border border-emerald-100 bg-white px-3 py-3 text-emerald-700 shadow-sm transition hover:bg-emerald-50 xl:hidden"
+                                >
+                                    {showingNavigationDropdown ? (
+                                        <X className="size-5" />
+                                    ) : (
+                                        <Menu className="size-5" />
+                                    )}
+                                </button>
+
+                                <div>
+                                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-600">
+                                        Payroll suite
+                                    </p>
+                                    {header && (
+                                        <div className="mt-1">{header}</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out bg-white border border-transparent rounded-md hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {user.name}
-
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-left shadow-sm transition hover:bg-emerald-50"
+                                        >
+                                            <span className="grid size-9 place-items-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
+                                                {user.name
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase()}
+                                            </span>
+                                            <span className="hidden sm:block">
+                                                <span className="block text-sm font-semibold text-slate-900">
+                                                    {user.name}
+                                                </span>
+                                                <span className="block text-xs text-slate-500">
+                                                    {user.email}
+                                                </span>
+                                            </span>
+                                        </button>
                                     </Dropdown.Trigger>
 
-                                    <Dropdown.Content>
+                                    <Dropdown.Content contentClasses="bg-white p-2">
                                         <Dropdown.Link
                                             href={route("profile.edit")}
+                                            className="rounded-xl px-4 py-3 hover:bg-emerald-50"
                                         >
                                             Profile
                                         </Dropdown.Link>
@@ -100,6 +238,7 @@ export default function AuthenticatedLayout({
                                             href={route("logout")}
                                             method="post"
                                             as="button"
+                                            className="rounded-xl px-4 py-3 hover:bg-emerald-50"
                                         >
                                             Log Out
                                         </Dropdown.Link>
@@ -108,112 +247,59 @@ export default function AuthenticatedLayout({
                             </div>
                         </div>
 
-                        <div className="flex items-center -me-2 sm:hidden">
-                            <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
-                                className="inline-flex items-center justify-center p-2 text-gray-400 transition duration-150 ease-in-out rounded-md hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    className="w-6 h-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? "inline-flex"
-                                                : "hidden"
+                        {showingNavigationDropdown && (
+                            <div className="border-t border-emerald-100 bg-white px-4 py-4 xl:hidden">
+                                <div className="space-y-2">
+                                    {navigation.map((item) => (
+                                        <SidebarLink
+                                            key={item.name}
+                                            href={item.href}
+                                            active={isNavigationActive(
+                                                item.match,
+                                            )}
+                                            icon={item.icon}
+                                            onClick={() =>
+                                                setShowingNavigationDropdown(
+                                                    false,
+                                                )
+                                            }
+                                        >
+                                            {item.name}
+                                        </SidebarLink>
+                                    ))}
+                                    <SidebarLink
+                                        href={route("profile.edit")}
+                                        active={route().current("profile.edit")}
+                                        icon={CircleUserRound}
+                                        onClick={() =>
+                                            setShowingNavigationDropdown(false)
                                         }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? "inline-flex"
-                                                : "hidden"
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                                    >
+                                        Profile
+                                    </SidebarLink>
+                                </div>
+                            </div>
+                        )}
+                    </header>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? "block" : "hidden") +
-                        " sm:hidden"
-                    }
-                >
-                    <div className="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink
-                            href={route("dashboard")}
-                            active={route().current("dashboard")}
+                    {/* Toast Notification */}
+                    {toast && (
+                        <div
+                            className={`fixed right-4 top-4 z-50 rounded-2xl px-5 py-3 text-sm font-medium shadow-lg ${
+                                toast.type === "error"
+                                    ? "bg-rose-600 text-white"
+                                    : "bg-emerald-600 text-white"
+                            }`}
                         >
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <div className="pt-4 pb-1 border-t border-gray-200">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
+                            {toast.msg}
                         </div>
+                    )}
 
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route("profile.edit")}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route("logout")}
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
-                    </div>
+                    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-10">
+                        {children}
+                    </main>
                 </div>
-            </nav>
-
-            {/* Toast Notification */}
-            {toast && (
-                <div
-                    className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg text-sm font-medium transition-all ${
-                        toast.type === "error"
-                            ? "bg-red-600 text-white"
-                            : "bg-green-600 text-white"
-                    }`}
-                >
-                    {toast.msg}
-                </div>
-            )}
-
-            {header && (
-                <header className="bg-white shadow">
-                    <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
-
-            <main>{children}</main>
+            </div>
         </div>
     );
 }
