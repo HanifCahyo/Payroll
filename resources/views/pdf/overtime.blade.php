@@ -1,10 +1,10 @@
-{{-- resources/views/pdf/slip.blade.php --}}
+{{-- resources/views/pdf/overtime.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <title>Slip Gaji — {{ $employee->nama }} — {{ $employee->import->period }}</title>
+    <title>Slip Lembur — {{ $employee->nama }} — {{ $employee->import->period }}</title>
     <style>
         @page {
             margin: 10mm 12mm;
@@ -124,26 +124,6 @@
             font-size: 9px;
         }
 
-        /* Main Content Columns */
-        .columns-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-
-        .columns-table>tbody>tr>td {
-            width: 50%;
-            vertical-align: top;
-        }
-
-        .column-left {
-            padding-right: 6px;
-        }
-
-        .column-right {
-            padding-left: 6px;
-        }
-
         /* Section Table Header */
         .sec-title {
             background: #047857;
@@ -157,41 +137,35 @@
             margin-bottom: 6px;
         }
 
-        .sec-title.deduction {
-            background: #475569;
-        }
-
         /* Financial Data Rows */
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 10px;
         }
 
         .data-table tr td {
-            padding: 3.5px 4px;
+            padding: 4.5px 6px;
             border-bottom: 1px solid #f1f5f9;
             font-size: 8.5px;
         }
 
-        .data-table tr:last-child td {
-            border-bottom: none;
-        }
-
         .col-name {
             color: #334155;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .col-qty {
             text-align: right;
             color: #64748b;
-            width: 35px;
+            width: 80px;
         }
 
         .col-amt {
             text-align: right;
-            font-weight: 600;
+            font-weight: 700;
             color: #0f172a;
+            width: 130px;
         }
 
         /* Subtotal Box */
@@ -202,7 +176,7 @@
         }
 
         .subtotal-row td {
-            padding: 4.5px 4px !important;
+            padding: 5px 6px !important;
             color: #0f172a !important;
         }
 
@@ -276,7 +250,6 @@
 <body>
     @php
         $rp = fn($v) => 'Rp ' . number_format((float) $v, 0, ',', '.');
-        $n = fn($v) => $v > 0 ? 'Rp ' . number_format((float) $v, 0, ',', '.') : '-';
         $qty = fn($v) => rtrim(rtrim(number_format((float) $v, 1, ',', ''), '0'), ',') ?: '0';
     @endphp
 
@@ -296,7 +269,7 @@
                     <div class="company-sub">Jl. Albisindo Raya No. 9, Gebog, Kudus, Jawa Tengah 59333</div>
                 </td>
                 <td class="doc-badge">
-                    <div class="badge-title">SLIP GAJI KARYAWAN</div>
+                    <div class="badge-title">SLIP LEMBUR KARYAWAN</div>
                     <div class="badge-period">Periode: {{ $employee->import->period }}</div>
                 </td>
             </tr>
@@ -326,81 +299,40 @@
             </tr>
         </table>
 
-        <!-- Two Column Financial Breakdown -->
-        <table class="columns-table">
-            <tr>
-                <td class="column-left">
-                    <div class="sec-title">1. Penerimaan & Upah</div>
-                    <table class="data-table">
-                        <tr>
-                            <td class="col-name">Upah Harian</td>
-                            <td class="col-qty">{{ $qty($employee->upah_hari) }} hr</td>
-                            <td class="col-amt">{{ $rp($employee->upah_nominal) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">Premi Hadir</td>
-                            <td class="col-qty">{{ $qty($employee->premi) }} hr</td>
-                            <td class="col-amt">{{ $rp($employee->nominal_premi) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">Upah Tunggu</td>
-                            <td class="col-qty">{{ $qty($employee->ut) }} hr</td>
-                            <td class="col-amt">{{ $rp($employee->nominal_ut) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">Sumbangan</td>
-                            <td class="col-qty">{{ $qty($employee->hari_sumbangan) }} hr</td>
-                            <td class="col-amt">{{ $rp($employee->nominal_sumbangan) }}</td>
-                        </tr>
-                        <tr class="subtotal-row">
-                            <td colspan="2">TOTAL PENERIMAAN</td>
-                            <td class="col-amt" style="color: #047857;">{{ $rp($employee->total_upah) }}</td>
-                        </tr>
-                    </table>
-                </td>
-
-                <td class="column-right">
-                    <div class="sec-title deduction">2. Potongan</div>
-                    <table class="data-table">
-                        <tr>
-                            <td class="col-name">Kedisiplinan</td>
-                            <td class="col-amt" colspan="2">{{ $n($employee->total_kedisiplinan) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">Keterlambatan ({{ $qty($employee->terlambat_menit) }} mnt)</td>
-                            <td class="col-amt" colspan="2">{{ $n($employee->jumlah_potongan_kedisiplinan) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">Sepatu / Potong Rambut</td>
-                            <td class="col-amt" colspan="2">{{ $n($employee->sepatu) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">Simpanan Wajib</td>
-                            <td class="col-amt" colspan="2">{{ $n($employee->simpanan_wajib) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">Koperasi (Ke-{{ (int) $employee->koperasi_ke ?: '-' }})</td>
-                            <td class="col-amt" colspan="2">{{ $n($employee->koperasi) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="col-name">BPJS Kesehatan / TK</td>
-                            <td class="col-amt" colspan="2">{{ $n($employee->bpjs) }}</td>
-                        </tr>
-                        <tr class="subtotal-row">
-                            <td colspan="2">TOTAL POTONGAN</td>
-                            <td class="col-amt" style="color: #e11d48;">{{ $rp($employee->jumlah_potongan) }}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
+        <!-- Overtime Breakdown Table -->
+        <div class="sec-title">RINCIAN UPAH LEMBUR</div>
+        <table class="data-table">
+            <thead>
+                <tr style="background: #f1f5f9; font-weight: 700; color: #475569;">
+                    <td style="padding: 4.5px 6px;">Kategori Lembur</td>
+                    <td style="text-align: right; padding: 4.5px 6px;">Total Jam</td>
+                    <td style="text-align: right; padding: 4.5px 6px;">Subtotal Nominal</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-name">Lembur Hari Biasa (LB)</td>
+                    <td class="col-qty">{{ $qty($employee->jam_lb) }} Jam</td>
+                    <td class="col-amt">{{ $rp($employee->lembur_biasa) }}</td>
+                </tr>
+                <tr>
+                    <td class="col-name">Lembur Hari Libur (LL)</td>
+                    <td class="col-qty">{{ $qty($employee->jam_ll) }} Jam</td>
+                    <td class="col-amt">{{ $rp($employee->lembur_libur) }}</td>
+                </tr>
+                <tr class="subtotal-row">
+                    <td colspan="2">TOTAL KESELURUHAN UPAH LEMBUR</td>
+                    <td class="col-amt" style="color: #047857;">{{ $rp($employee->upah_diterima) }}</td>
+                </tr>
+            </tbody>
         </table>
 
         <!-- Grand Total Card -->
         <table class="total-card">
             <tr>
                 <td>
-                    <div class="total-label">TOTAL UPAH DITERIMA</div>
-                    <div style="font-size: 7.5px; color: #047857; margin-top: 1px;">Range:
+                    <div class="total-label">JUMLAH LEMBUR YANG DITERIMA</div>
+                    <div style="font-size: 7.5px; color: #065f46; margin-top: 1px;">Range Periode:
                         {{ $employee->import->period_range }}
                     </div>
                 </td>

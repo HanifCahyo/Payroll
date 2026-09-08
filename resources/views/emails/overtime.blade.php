@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slip Gaji — PT. Gading Gadjah Mada</title>
+    <title>Slip Lembur — PT. Gading Gadjah Mada</title>
 </head>
 
 <body
@@ -54,7 +54,7 @@
                                 {{ $employee->nama }}
                             </p>
                             <p style="margin: 0 0 14px; font-size: 12.5px; color: #475569;">
-                                NIP: <span
+                                NIP : <span
                                     style="font-weight: 600; color: #047857;">{{ $employee->nip_baru ?: $employee->nip }}</span>
                                 &bull; Bagian: <span
                                     style="font-weight: 600; color: #0f172a;">{{ $employee->bagian }}</span>
@@ -62,8 +62,8 @@
 
                             <!-- Document Description -->
                             <p style="margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: #334155;">
-                                Bersama email ini kami sampaikan dokumen resmi <strong>Slip Gaji Karyawan</strong> untuk
-                                periode <strong>{{ $employee->import->period }}</strong>.
+                                Bersama email ini kami sampaikan dokumen resmi <strong>Slip Lembur Karyawan</strong>
+                                untuk periode <strong>{{ $employee->import->period }}</strong>.
                             </p>
 
                             <!-- Summary Details Box -->
@@ -74,11 +74,10 @@
                                         <table role="presentation" width="100%" border="0" cellspacing="0"
                                             cellpadding="0">
                                             <tr>
-                                                <td style="font-size: 12.5px; color: #64748b;">Dokumen</td>
+                                                <td style="font-size: 12.5px; color: #64748b;">Jenis Dokumen</td>
                                                 <td align="right"
                                                     style="font-size: 12.5px; font-weight: 700; color: #047857;">Slip
-                                                    Gaji
-                                                    Bulanan</td>
+                                                    Lembur Karyawan</td>
                                             </tr>
                                         </table>
                                     </td>
