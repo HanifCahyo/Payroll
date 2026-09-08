@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('payroll_import_id')->constrained()->cascadeOnDelete();
             $table->integer('row_number');
+            $table->string('nip_baru')->nullable();
             $table->string('nip')->nullable();
             $table->string('rekening')->nullable();
             $table->string('nama')->nullable();
