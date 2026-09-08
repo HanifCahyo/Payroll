@@ -21,7 +21,8 @@ class SendPayrollSlipJob implements ShouldQueue
 
     public function __construct(
         public PayrollEmployee $employee,
-        public int $mailConfigId
+        public int $mailConfigId,
+        public string $documentType = PayrollSlipMail::TYPE_SALARY,
     ) {
     }
 
@@ -30,10 +31,15 @@ class SendPayrollSlipJob implements ShouldQueue
         $config = MailConfiguration::findOrFail($this->mailConfigId);
         MailConfiguration::applyToMailer($config);
 
-        $pdfPath = PayrollController::generateAndStorePdf($this->employee);
+        $pdfPath = $this->documentType === PayrollSlipMail::TYPE_OVERTIME
+            ? PayrollController::generateAndStoreOvertimePdf($this->employee)
+            : PayrollController::generateAndStorePdf($this->employee);
+
+        // Jeda waktu aman 2 detik antar pengiriman agar tidak terdeteksi bot/spam oleh algoritma Google Gmail
+        sleep(2);
 
         Mail::to($this->employee->email)
-            ->send(new PayrollSlipMail($this->employee, $pdfPath));
+            ->send(new PayrollSlipMail($this->employee, $pdfPath, $this->documentType));
 
         $this->employee->update([
             'email_sent' => true,
@@ -43,6 +49,7 @@ class SendPayrollSlipJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        \Log::error("Gagal kirim slip [{$this->employee->nip}]: " . $e->getMessage());
+        $nip = $this->employee->nip_baru ?: $this->employee->nip;
+        \Log::error("Gagal kirim slip {$this->documentType} [{$nip}]: " . $e->getMessage());
     }
 }

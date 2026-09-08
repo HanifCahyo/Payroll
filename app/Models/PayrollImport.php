@@ -9,6 +9,7 @@ class PayrollImport extends Model
 {
     protected $fillable = [
         'file_name',
+        'type',
         'period',
         'period_range',
         'sheet_name',

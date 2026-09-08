@@ -10,6 +10,7 @@ class PayrollEmployee extends Model
     protected $fillable = [
         'payroll_import_id',
         'row_number',
+        'nip_baru',
         'nip',
         'rekening',
         'nama',
@@ -55,5 +56,10 @@ class PayrollEmployee extends Model
     public function import(): BelongsTo
     {
         return $this->belongsTo(PayrollImport::class, 'payroll_import_id');
+    }
+
+    public function getPrimaryNipAttribute(): ?string
+    {
+        return $this->nip_baru ?: $this->nip;
     }
 }

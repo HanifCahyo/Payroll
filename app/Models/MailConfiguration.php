@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class MailConfiguration extends Model
 {
+    private const DAILY_LIMIT = 400;
+
     protected $fillable = [
         'name',
         'host',
@@ -20,7 +22,8 @@ class MailConfiguration extends Model
 
     public function setPasswordAttribute(string $value): void
     {
-        $this->attributes['password'] = encrypt($value);
+        $normalized = preg_replace('/[^a-zA-Z0-9]/', '', trim($value));
+        $this->attributes['password'] = encrypt($normalized ?? '');
     }
 
     public function getPasswordAttribute(string $value): string
@@ -47,5 +50,61 @@ class MailConfiguration extends Model
         ]);
 
         app('mail.manager')->purge('smtp');
+    }
+
+    public function emailQuota()
+    {
+        return $this->hasOne(EmailQuota::class, 'mail_configuration_id')
+            ->where('quota_date', today());
+    }
+
+    public function quotas()
+    {
+        return $this->hasMany(EmailQuota::class, 'mail_configuration_id');
+    }
+
+    public function getRemainingQuota(): int
+    {
+        $quota = $this->emailQuota()->first() ?? $this->initializeQuotaForToday();
+        return max(0, $quota->daily_limit - $quota->sent_count);
+    }
+
+    public function canSendEmail(): bool
+    {
+        return $this->getRemainingQuota() > 0;
+    }
+
+    public function incrementSentCount(): void
+    {
+        $quota = $this->emailQuota()->first() ?? $this->initializeQuotaForToday();
+        $quota->increment('sent_count');
+    }
+
+    private function initializeQuotaForToday(): EmailQuota
+    {
+        return EmailQuota::firstOrCreate(
+            [
+                'mail_configuration_id' => $this->id,
+                'quota_date' => today()->toDateString(),
+            ],
+            [
+                'sent_count' => 0,
+                'daily_limit' => self::DAILY_LIMIT,
+            ]
+        );
+    }
+
+    public function getTodayQuota(): EmailQuota
+    {
+        return $this->emailQuota()->first() ?? $this->initializeQuotaForToday();
+    }
+
+    public static function getActiveWithQuota()
+    {
+        return static::query()
+            ->orderByDesc('is_active')
+            ->orderBy('id')
+            ->get()
+            ->first(fn($config) => $config->canSendEmail());
     }
 }
