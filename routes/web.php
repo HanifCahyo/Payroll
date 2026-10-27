@@ -1,12 +1,15 @@
 <?php
 
+use App\Http\Controllers\MailConfigController;
+use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\PayrollEmailController;
 use App\Http\Controllers\ProfileController;
 use App\Models\MailConfiguration;
 use App\Models\PayrollEmployee;
 use App\Models\PayrollImport;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\{PayrollController, PayrollEmailController, MailConfigController};
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -61,6 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('/password', [PasswordController::class, 'update'])->name('password.update');
 });
 
 require __DIR__ . '/auth.php';

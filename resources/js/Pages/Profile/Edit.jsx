@@ -1,6 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import DeleteUserForm from "./Partials/DeleteUserForm";
 import UpdatePasswordForm from "./Partials/UpdatePasswordForm";
 import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
 import { User, ShieldCheck } from "lucide-react";
@@ -33,8 +32,8 @@ export default function Edit({ mustVerifyEmail, status }) {
                                 Kelola identitas dan keamanan akun Anda.
                             </h3>
                             <p className="text-sm leading-6 text-slate-500">
-                                Perbarui nama profil, email akun, kata sandi, serta
-                                pengaturan keamanan pengguna di bawah ini.
+                                Perbarui nama profil, email akun, kata sandi,
+                                serta pengaturan keamanan pengguna di bawah ini.
                             </p>
                         </div>
 
@@ -56,10 +55,6 @@ export default function Edit({ mustVerifyEmail, status }) {
 
                     <div className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-8">
                         <UpdatePasswordForm className="max-w-2xl" />
-                    </div>
-
-                    <div className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-8">
-                        <DeleteUserForm className="max-w-2xl" />
                     </div>
                 </div>
             </div>

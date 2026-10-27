@@ -111,27 +111,24 @@ export default function AuthenticatedLayout({
     return (
         <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f0fdf4_100%)]">
             <div className="mx-auto flex min-h-screen max-w-[1800px]">
-                <aside className="sticky top-0 hidden h-screen w-80 shrink-0 flex-col border-r border-emerald-100 bg-white/90 px-6 py-6 backdrop-blur xl:flex">
+                <aside className="sticky top-0 flex-col hidden h-screen px-6 py-6 border-r w-80 shrink-0 border-emerald-100 bg-white/90 backdrop-blur xl:flex">
                     <Link
                         href={route("dashboard")}
-                        className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-4"
+                        className="flex items-center gap-3 px-4 py-4 border rounded-2xl border-emerald-100 bg-emerald-50/70"
                     >
                         <img
                             src="/LOGO%20GGM%20BARU.png"
                             alt="GGM"
-                            className="h-12 w-auto"
+                            className="w-auto h-12"
                         />
                         <div>
                             <p className="text-sm font-semibold text-emerald-950">
                                 GGM Payroll
                             </p>
-                            <p className="text-xs text-emerald-700/80">
-                                HEAD OF IT
-                            </p>
                         </div>
                     </Link>
 
-                    <nav className="mt-8 flex-1 space-y-2">
+                    <nav className="flex-1 mt-8 space-y-2">
                         {navigation.map((item) => (
                             <SidebarLink
                                 key={item.name}
@@ -154,7 +151,7 @@ export default function AuthenticatedLayout({
                         </div>
                     </nav>
 
-                    <div className="rounded-3xl border border-emerald-100 bg-white p-4 shadow-sm">
+                    <div className="p-4 bg-white border shadow-sm rounded-3xl border-emerald-100">
                         <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-600">
                             Signed in as
                         </p>
@@ -166,7 +163,7 @@ export default function AuthenticatedLayout({
                             href={route("logout")}
                             method="post"
                             as="button"
-                            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-rose-600 transition hover:text-rose-700"
+                            className="inline-flex items-center gap-2 mt-4 text-sm font-medium transition text-rose-600 hover:text-rose-700"
                         >
                             <LogOut className="size-4" />
                             Log out
@@ -174,7 +171,7 @@ export default function AuthenticatedLayout({
                     </div>
                 </aside>
 
-                <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex flex-col flex-1 min-w-0">
                     <header className="sticky top-0 z-30 border-b border-white/70 bg-white/80 backdrop-blur">
                         <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8 xl:pl-10">
                             <div className="flex items-center gap-3">
@@ -185,7 +182,7 @@ export default function AuthenticatedLayout({
                                             (previousState) => !previousState,
                                         )
                                     }
-                                    className="inline-flex items-center justify-center rounded-xl border border-emerald-100 bg-white px-3 py-3 text-emerald-700 shadow-sm transition hover:bg-emerald-50 xl:hidden"
+                                    className="inline-flex items-center justify-center px-3 py-3 transition bg-white border shadow-sm rounded-xl border-emerald-100 text-emerald-700 hover:bg-emerald-50 xl:hidden"
                                 >
                                     {showingNavigationDropdown ? (
                                         <X className="size-5" />
@@ -193,15 +190,6 @@ export default function AuthenticatedLayout({
                                         <Menu className="size-5" />
                                     )}
                                 </button>
-
-                                <div>
-                                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-600">
-                                        Payroll suite
-                                    </p>
-                                    {header && (
-                                        <div className="mt-1">{header}</div>
-                                    )}
-                                </div>
                             </div>
 
                             <div className="relative">
@@ -209,9 +197,9 @@ export default function AuthenticatedLayout({
                                     <Dropdown.Trigger>
                                         <button
                                             type="button"
-                                            className="inline-flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-left shadow-sm transition hover:bg-emerald-50"
+                                            className="inline-flex items-center gap-3 px-3 py-2 text-left transition bg-white border shadow-sm rounded-2xl border-emerald-100 hover:bg-emerald-50"
                                         >
-                                            <span className="grid size-9 place-items-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
+                                            <span className="grid text-sm font-semibold text-white rounded-full size-9 place-items-center bg-emerald-600">
                                                 {user.name
                                                     ?.charAt(0)
                                                     ?.toUpperCase()}
@@ -230,7 +218,7 @@ export default function AuthenticatedLayout({
                                     <Dropdown.Content contentClasses="bg-white p-2">
                                         <Dropdown.Link
                                             href={route("profile.edit")}
-                                            className="rounded-xl px-4 py-3 hover:bg-emerald-50"
+                                            className="px-4 py-3 rounded-xl hover:bg-emerald-50"
                                         >
                                             Profile
                                         </Dropdown.Link>
@@ -238,7 +226,7 @@ export default function AuthenticatedLayout({
                                             href={route("logout")}
                                             method="post"
                                             as="button"
-                                            className="rounded-xl px-4 py-3 hover:bg-emerald-50"
+                                            className="px-4 py-3 rounded-xl hover:bg-emerald-50"
                                         >
                                             Log Out
                                         </Dropdown.Link>
@@ -248,7 +236,7 @@ export default function AuthenticatedLayout({
                         </div>
 
                         {showingNavigationDropdown && (
-                            <div className="border-t border-emerald-100 bg-white px-4 py-4 xl:hidden">
+                            <div className="px-4 py-4 bg-white border-t border-emerald-100 xl:hidden">
                                 <div className="space-y-2">
                                     {navigation.map((item) => (
                                         <SidebarLink
