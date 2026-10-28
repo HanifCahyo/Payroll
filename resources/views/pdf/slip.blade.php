@@ -352,9 +352,18 @@
                             <td class="col-qty">{{ $qty($employee->hari_sumbangan) }} hr</td>
                             <td class="col-amt">{{ $rp($employee->nominal_sumbangan) }}</td>
                         </tr>
+                        @if ($employee->tambahan > 0)
+                            <tr>
+                                <td class="col-name">Tambahan</td>
+                                <td class="col-qty"></td>
+                                <td class="col-amt">{{ $rp($employee->tambahan) }}</td>
+                            </tr>
+                        @endif
                         <tr class="subtotal-row">
                             <td colspan="2">TOTAL PENERIMAAN</td>
-                            <td class="col-amt" style="color: #047857;">{{ $rp($employee->total_upah) }}</td>
+                            <td class="col-amt" style="color: #047857;">
+                                {{ $rp((float) $employee->total_upah + (float) $employee->tambahan) }}
+                            </td>
                         </tr>
                     </table>
                 </td>
@@ -405,7 +414,7 @@
                     </div>
                 </td>
                 <td class="total-val">
-                    {{ $rp($employee->upah_diterima) }}
+                    {{ $rp((float) $employee->upah_diterima + (float) $employee->tambahan) }}
                 </td>
             </tr>
         </table>

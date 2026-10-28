@@ -475,9 +475,13 @@ class PayrollController extends Controller
             'total_upah' => 'nullable|numeric',
             'jumlah_potongan' => 'nullable|numeric',
             'upah_diterima' => 'nullable|numeric',
+            'tambahan' => 'nullable|numeric|min:0',
         ]);
 
         $payload = $validated;
+        if (array_key_exists('tambahan', $payload) && $payload['tambahan'] === null) {
+            $payload['tambahan'] = 0;
+        }
 
         if ($employee->pdf_path && Storage::exists($employee->pdf_path)) {
             Storage::delete($employee->pdf_path);

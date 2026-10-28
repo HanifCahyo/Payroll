@@ -113,6 +113,7 @@ export default function PayrollDetailView({
         total_upah: 0,
         jumlah_potongan: 0,
         upah_diterima: 0,
+        tambahan: 0,
     });
 
     const openEditModal = (emp) => {
@@ -127,6 +128,7 @@ export default function PayrollDetailView({
             total_upah: emp.total_upah ?? 0,
             jumlah_potongan: emp.jumlah_potongan ?? 0,
             upah_diterima: emp.upah_diterima ?? 0,
+            tambahan: emp.tambahan ?? 0,
         });
     };
 
@@ -533,7 +535,10 @@ export default function PayrollDetailView({
                                             )}
                                         </td>
                                         <td className="px-3 py-3 text-right font-semibold text-emerald-700">
-                                            {formatCurrency(emp.upah_diterima)}
+                                            {formatCurrency(
+                                                Number(emp.upah_diterima ?? 0) +
+                                                    Number(emp.tambahan ?? 0),
+                                            )}
                                         </td>
                                         <td className="px-3 py-3 max-w-[160px] truncate text-slate-500">
                                             {emp.email || "—"}
@@ -761,7 +766,7 @@ export default function PayrollDetailView({
                                 Ringkasan Gaji & Upah Diterima
                             </h3>
 
-                            <div className="grid gap-4 sm:grid-cols-3">
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 <div>
                                     <label className="text-xs font-semibold text-slate-700">
                                         Total Upah (Rp)
@@ -780,6 +785,32 @@ export default function PayrollDetailView({
                                     />
                                     <p className="mt-1 text-[10px] text-slate-500">
                                         {formatCurrency(editData.total_upah)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold text-slate-700">
+                                        Tambahan (Rp)
+                                    </label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="any"
+                                        value={editData.tambahan}
+                                        onChange={(e) =>
+                                            setEditData(
+                                                "tambahan",
+                                                e.target.value,
+                                            )
+                                        }
+                                        className="mt-1 bg-white font-semibold text-slate-900"
+                                    />
+                                    {editErrors.tambahan && (
+                                        <p className="mt-1 text-xs text-rose-600">
+                                            {editErrors.tambahan}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-[10px] text-slate-500">
+                                        {formatCurrency(editData.tambahan)}
                                     </p>
                                 </div>
                                 <div>

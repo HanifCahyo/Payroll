@@ -320,9 +320,21 @@
                     <td class="col-qty">{{ $qty($employee->jam_ll) }} Jam</td>
                     <td class="col-amt">{{ $rp($employee->lembur_libur) }}</td>
                 </tr>
+                @if ($employee->tambahan > 0)
+                    <tr>
+                        <td class="col-name">Tambahan</td>
+                        <td class="col-qty"></td>
+                        <td class="col-amt">{{ $rp($employee->tambahan) }}</td>
+                    </tr>
+                @endif
                 <tr class="subtotal-row">
-                    <td colspan="2">TOTAL KESELURUHAN UPAH LEMBUR</td>
-                    <td class="col-amt" style="color: #047857;">{{ $rp($employee->upah_diterima) }}</td>
+                    <td colspan="2">
+                        TOTAL KESELURUHAN
+                        {{ $employee->tambahan > 0 ? 'PENERIMAAN' : 'UPAH LEMBUR' }}
+                    </td>
+                    <td class="col-amt" style="color: #047857;">
+                        {{ $rp((float) $employee->upah_diterima + (float) $employee->tambahan) }}
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -337,7 +349,7 @@
                     </div>
                 </td>
                 <td class="total-val">
-                    {{ $rp($employee->upah_diterima) }}
+                    {{ $rp((float) $employee->upah_diterima + (float) $employee->tambahan) }}
                 </td>
             </tr>
         </table>

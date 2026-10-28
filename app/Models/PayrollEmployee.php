@@ -43,6 +43,7 @@ class PayrollEmployee extends Model
         'bpjs',
         'jumlah_potongan',
         'upah_diterima',
+        'tambahan',
         'email_sent',
         'email_sent_at',
         'pdf_path',
